@@ -39,7 +39,7 @@ file_poly = 'ice_edge_coordinates.txt' #координаты для полиго
 k = adding_ice_data_api.split_coordinates_file(file_poly)
 
 for i in range(k):
-    file_path_poly = f'coordinate_part_{i}.txt'
+    file_path_poly = f'/home/student/Ice_edge/coordinate_part_{i}.txt'
 
     print(file_path_poly)
 

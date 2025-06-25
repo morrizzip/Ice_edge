@@ -1,6 +1,8 @@
 import requests
-from secret import *
 from pyproj import Transformer
+username = "student1"
+password = "ZfE-4wz-P3F-D2s"
+AUTH = (username, password)
 
 #создание группы ресурсов
 def createResourceGroup(url,parentID,display_name,description):

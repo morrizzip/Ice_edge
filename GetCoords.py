@@ -130,7 +130,7 @@ def visualize_all_steps(original, processed, segmented, contours):
 
 
 if __name__ == "__main__":
-    img_path = 'output_masked.tif'
+    img_path = '/home/student/Ice_edge/output_masked.tif'
 
     try:
         # Загрузка изображения

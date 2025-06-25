@@ -39,7 +39,7 @@ def merge_geotiffs(input_files, output_file):
 
 if __name__ == "__main__":
     # Получаем список всех GeoTIFF-файлов в папке photos_geotiff
-    input_files = glob.glob(os.path.join('photos_geotiff', '*.tif'))
+    input_files = glob.glob(os.path.join('/home/student/Ice_edge/photos_geotiff', '*.tif'))
 
     if not input_files:
         print("Не найдены GeoTIFF-файлы в папке 'photos_geotiff'")

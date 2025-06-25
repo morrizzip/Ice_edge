@@ -44,11 +44,12 @@ if __name__ == "__main__":
     if not input_files:
         print("Не найдены GeoTIFF-файлы в папке 'photos_geotiff'")
     else:
-        # Сохраняем на уровень выше (в родительскую директорию)
-        output_file = os.path.join('merged_output.tif')
+        output_dir = '/home/student/Ice_edge'
+        # Указываем путь и имя выходного файла
+        output_file = os.path.join(output_dir, 'merged_output.tif')
 
         # Получаем абсолютный путь для наглядности
-        abs_output_path = os.path.abspath(output_file)
+        abs_output_path = os.path.abspath(output_file) 
 
         merge_geotiffs(input_files, output_file)
-        print(f"Объединенный файл сохранен как: {abs_output_path}")
+        print(f"Объединенный файл сохранен как: {output_file}")

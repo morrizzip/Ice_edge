@@ -2,7 +2,19 @@ import io
 import os
 import requests
 from bs4 import BeautifulSoup
-from vega import *
+from datetime import datetime
+
+
+def get_date_input(prompt):
+    """Функция для ввода даты с валидацией"""
+    while True:
+        date_str = input(prompt + " (гггг-мм-дд): ")
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return date_str
+        except ValueError:
+            print("Неправильный формат даты. Пожалуйста, введите дату в формате гггг-мм-дд")
+
 
 def get_all_params(base_url, user, pwd, ukey, bbox, width, height, date, date_from, limit=150):
     # URL для получения метаданных
@@ -37,11 +49,11 @@ def get_all_params(base_url, user, pwd, ukey, bbox, width, height, date, date_fr
 
 
 def download_images(base_url, user, pwd, ukey, ids, common_params, save_dir='photos', max_images=3):
-
     os.makedirs(save_dir, exist_ok=True)
     base_download_url = f"{base_url}/export/local/smiswms/get_map.pl?ukey={ukey}"
     print(f"Всего найдено снимков: {len(ids)}")
-    for i, snapshot_id in enumerate(ids, start=1):
+
+    for i, snapshot_id in enumerate(ids[:max_images], start=1):
         params = common_params.copy()
         params["unisat_uids"] = snapshot_id
 
@@ -60,32 +72,44 @@ def download_images(base_url, user, pwd, ukey, ids, common_params, save_dir='pho
             print(f"Неожиданная ошибка для ID {snapshot_id}: {e}")
 
 
-if __name__ == "__main__":
-    # Параметры запроса
+def main():
+    print("=== Программа загрузки спутниковых снимков ===")
+
+    # Запрос дат у пользователя
+    date_from = get_date_input("Введите начальную дату периода")
+    date_to = get_date_input("Введите конечную дату периода")
+
+    # Остальные параметры
     BASE_URL = "http://sci-vega.ru/fap/toproxy"
-    BBOX = "34.4794,63.747,44.8066,71.833"
+    BBOX = "34.4794,63.747,63.8525,71.7978"  # lon, lat
     WIDTH = HEIGHT = 1240
-    DATE = "2021-02-01"
-    DATE_FROM = "2021-01-01"
     LIMIT = 150
 
     # Получаем параметры запроса
     metadata_url, metadata_params = get_all_params(
         base_url=BASE_URL,
-        user=user,
-        pwd=pwd,
-        ukey=ukey,
+        user='mau_api',
+        pwd='DIg2e2+K',
+        ukey='53616c7465645f5f4d5d9043e4ef4a6f7c915d382c1a2260fd9f01800279786afb18a03f7be9b321',
         bbox=BBOX,
         width=WIDTH,
         height=HEIGHT,
-        date=DATE,
-        date_from=DATE_FROM,
+        date=date_to,  # Используем введенную конечную дату
+        date_from=date_from,  # Используем введенную начальную дату
         limit=LIMIT
     )
 
     # Отправляем запрос метаданных
-    response = requests.get(metadata_url, params=metadata_params, auth=(user, pwd))
-    data = response.json()
+    try:
+        response = requests.get(metadata_url, params=metadata_params, auth=('mau_api', 'DIg2e2+K'))
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при запросе метаданных: {e}")
+        return
+    except ValueError as e:
+        print(f"Ошибка при разборе JSON ответа: {e}")
+        return
 
     # Извлекаем IDs и серверы
     ids = []
@@ -99,31 +123,49 @@ if __name__ == "__main__":
                     ids.append(snapshot_id)
                     servers.append(snapshot_server)
 
-    print(f"Найдено снимков: {len(ids)}")
-    print("IDs:", ids)
-    print("Серверы:", servers)
+    print(f"\nНайдено снимков за период с {date_from} по {date_to}: {len(ids)}")
+    if ids:
+        print("Пример ID снимка:", ids[0])
+        print("Пример сервера:", servers[0])
 
-    # Общие параметры для загрузки изображений
-    common_params = {
-        "layers": "unisat",
-        "db_pkg_mode": "radarsat",
-        "FORMAT": "png",
-        "WIDTH": WIDTH,
-        "HEIGHT": HEIGHT,
-        "BBOX": BBOX,
-        "EXCEPTIONS": "xml",
-        "SERVICE": "WMS",
-        "REQUEST": "GetMap",
-        "transparent": 1
-    }
+        # Общие параметры для загрузки изображений
+        common_params = {
+            "layers": "unisat",
+            "db_pkg_mode": "radarsat",
+            "FORMAT": "png",
+            "WIDTH": WIDTH,
+            "HEIGHT": HEIGHT,
+            "BBOX": BBOX,
+            "EXCEPTIONS": "xml",
+            "SERVICE": "WMS",
+            "REQUEST": "GetMap",
+            "transparent": 1
+        }
 
-    # Загружаем изображения
-    download_images(
-        base_url=BASE_URL,
-        user=user,
-        pwd=pwd,
-        ukey=ukey,
-        ids=ids,
-        common_params=common_params,
-        save_dir='photos'
-    )
+        # Запрашиваем количество снимков для загрузки
+        while True:
+            try:
+                max_images = int(input(f"\nСколько снимков загрузить (доступно {len(ids)}, введите число): "))
+                if 1 <= max_images <= len(ids):
+                    break
+                print(f"Пожалуйста, введите число от 1 до {len(ids)}")
+            except ValueError:
+                print("Пожалуйста, введите целое число")
+
+        # Загружаем изображения
+        download_images(
+            base_url=BASE_URL,
+            user='mau_api',
+            pwd='DIg2e2+K',
+            ukey='53616c7465645f5f4d5d9043e4ef4a6f7c915d382c1a2260fd9f01800279786afb18a03f7be9b321',
+            ids=ids,
+            common_params=common_params,
+            save_dir='photos',
+            max_images=max_images
+        )
+    else:
+        print("Не найдено снимков для указанного периода.")
+
+
+if __name__ == "__main__":
+    main()

@@ -11,14 +11,14 @@ def load_sar_image(file_path):
 
 
 def preprocess_image(img):
-    # Логарифмическое преобразование для улучшения динамического диапазона
-    img_log = np.log1p(img)
+    # 1. Логарифмирование с защитой от выбросов
+    img_log = np.log1p(np.clip(img, 0, np.percentile(img, 99)))
 
-    # Нормализация с расширенным диапазоном
-    img_norm = cv2.normalize(img_log, None, 0, 300, cv2.NORM_MINMAX)
+    # 2. Более мягкая нормализация
+    img_norm = cv2.normalize(img_log, None, 0, 255, cv2.NORM_MINMAX)
 
-    # Адаптивное выравнивание гистограммы с увеличенными параметрами
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(16, 16))
+    # 3. Умеренное CLAHE
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     img_enhanced = clahe.apply(img_norm.astype(np.uint8))
 
     return img_enhanced
@@ -42,7 +42,7 @@ def segment_ice_water_land(img):
 
     # Определение порогов
     water_mask = (img_blur < np.percentile(img_blur, 65)).astype(np.uint8) * 255
-    ice_mask = (img_blur > np.percentile(img_blur, 90)).astype(np.uint8) * 255
+    ice_mask = (img_blur > np.percentile(img_blur, 93)).astype(np.uint8) * 255
 
     segmented = np.zeros_like(img_blur)
 

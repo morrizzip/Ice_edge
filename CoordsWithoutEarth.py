@@ -55,9 +55,9 @@ def mask_russia_from_tiff(input_tiff, output_tiff, russia_polygon):
 
 def main():
     # Параметры файлов
-    gadm_file = "gadm.json"
-    input_tiff = "merged_output.tif"
-    output_tiff = "output_masked.tif"
+    gadm_file = "/home/student/Ice_edge/gadm.json"
+    input_tiff = "/home/student/Ice_edge/merged_output.tif"
+    output_tiff = "/home/student/Ice_edge/output_masked.tif"
 
     # Загружаем границы России
     russia = load_russia_boundary(gadm_file)

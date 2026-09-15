@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+
+venv/
+env/
+.env
+
+*.iml
+.idea/
+
+data/photos_geotiff/
+data/photos/
+dist/
+build/
+*.egg-info/

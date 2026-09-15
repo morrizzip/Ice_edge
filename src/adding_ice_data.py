@@ -22,7 +22,7 @@ def get_mpID_for_date(date):
     }
     return date_mpID_mapping.get(date, None)
 
-# ввод пользователя
+
 selected_date = input("Выберите дату (формат YYYY или [YYYYmon]): ")
 
 mpID = get_mpID_for_date(selected_date)
@@ -39,7 +39,7 @@ file_poly = 'ice_edge_coordinates.txt' #координаты для полиго
 k = adding_ice_data_api.split_coordinates_file(file_poly)
 
 for i in range(k):
-    file_path_poly = f'/home/student/Ice_edge/coordinate_part_{i}.txt'
+    file_path_poly = f'data/coordinate_part_{i}.txt'
 
     print(file_path_poly)
 

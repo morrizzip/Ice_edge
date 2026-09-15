@@ -1,7 +1,11 @@
 import requests
 from pyproj import Transformer
-username = "student1"
-password = "ZfE-4wz-P3F-D2s"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+username = os.environ.get("API_USER")
+password = os.environ.get("API_PASSWORD")
 AUTH = (username, password)
 
 #создание группы ресурсов
@@ -88,7 +92,7 @@ def split_coordinates_file(file_path):
 
         # Если есть больше 1000 строк, сохраняем текущий набор в файл
         if line_count >= 1000:
-            output_file_name = f'coordinate_part_{file_index}.txt'
+            output_file_name = f'data/coordinate_part_{file_index}.txt'
             with open(output_file_name, 'w') as out_file:
                 out_file.write('\n'.join(output_lines).strip())
             print(f"File created: {output_file_name}")
@@ -99,20 +103,17 @@ def split_coordinates_file(file_path):
 
     # Сохраняем оставшиеся строки, если они есть
     if output_lines:
-        output_file_name = f'coordinate_part_{file_index}.txt'
+        output_file_name = f'data/coordinate_part_{file_index}.txt'
         with open(output_file_name, 'w') as out_file:
             out_file.write('\n'.join(output_lines).strip())
         print(f"File created: {output_file_name}")
 
     return file_index
 
-#
-#                 ДОБАВЛЕНИЕ ДАННЫХ
-#
-
-#преобразователь координат
+#Добавление данных
+# преобразование координат
 transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
-#конвертор коориднат
+
 def convert_coordinates(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
@@ -130,7 +131,7 @@ def convert_coordinates(file_path):
                 current_polygon = []
             continue
 
-        # обработка
+
         try:
             lon, lat = map(float, line.split(","))
             x, y = transformer.transform(lon, lat)
@@ -142,7 +143,7 @@ def convert_coordinates(file_path):
         current_polygon.append(current_polygon[0])
         polygons.append(current_polygon)
 
-    #вывод
+
     formatted_output = ', '.join(f"(({', '.join(polygon)}))" for polygon in polygons)
     result = f"{formatted_output}" if formatted_output else ""
 
@@ -162,7 +163,6 @@ def addPointToVectorLayer(url: str, layerID: int, coordinates: tuple):
         auth=AUTH,
     )
 
-    #отладка
     print("Response status code:", r.status_code)
     try:
         print("Response content:", r.json())
@@ -181,7 +181,7 @@ def addPointsFromFile(file_path: str, url: str, layerID: int):
                 try:
                     lon = float(coords[0])
                     lat = float(coords[1])
-                    #из EPSG:4326 в EPSG:3857
+                    #преобразование из EPSG:4326 в EPSG:3857
                     x, y = transformer.transform(lon, lat)
 
                     coordinates = (x, y)
@@ -205,7 +205,7 @@ def addMultiPolygonToVectorLayer(url, layerID, polygons):
         verify=False
     )
 
-    #отладка
+
     print("Response status code:", r.status_code)
     try:
         print("Response content:", r.json())
@@ -229,7 +229,7 @@ def addMLinesToVectorLayer(url, layerID, polygons):
         verify=False
     )
 
-    #отладка
+
     print("Response status code:", r.status_code)
     try:
         print("Response content:", r.json())
